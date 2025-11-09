@@ -1,0 +1,44 @@
+export type UserRole = 'USER' | 'ADMIN';
+
+export type PublicUser = {
+  id: string;
+  username: string;
+  role: UserRole;
+  avatarKey?: string | null;
+  createdAt: string;
+};
+
+export type Episode = {
+  id: string;
+  number: number;
+  name: string;
+  durationMinutes?: number | null;
+  playerSrc?: string;
+  published: boolean;
+};
+
+export type Title = {
+  id: string;
+  slug: string;
+  name: string;
+  description?: string | null;
+  coverKey?: string | null;
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+  episodes: Episode[];
+};
+
+export type CommentStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export type Comment = {
+  id: string;
+  body: string;
+  status?: CommentStatus;
+  createdAt: string;
+  author: {
+    id: string;
+    username: string;
+    avatarKey?: string | null;
+  };
+};

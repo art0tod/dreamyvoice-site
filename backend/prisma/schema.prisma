@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id           String     @id @default(cuid())
+  username     String     @unique
+  passwordHash String     @map("password_hash")
+  role         Role       @default(USER)
+  avatarKey    String?    @map("avatar_key")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  comments     Comment[]
+  sessions     Session[]
+
+  @@map("users")
+}
+
+model Title {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  name        String
+  description String?
+  coverKey    String?    @map("cover_key")
+  published   Boolean    @default(false)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  episodes    Episode[]
+  comments    Comment[]
+
+  @@map("titles")
+}
+
+model Episode {
+  id              String    @id @default(cuid())
+  titleId         String    @map("title_id")
+  number          Int
+  name            String
+  playerSrc       String    @map("player_src")
+  durationMinutes Int?      @map("duration_minutes")
+  published       Boolean   @default(false)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  title           Title     @relation(fields: [titleId], references: [id], onDelete: Cascade)
+
+  @@map("episodes")
+  @@unique([titleId, number])
+}
+
+model Comment {
+  id        String         @id @default(cuid())
+  titleId   String         @map("title_id")
+  userId    String         @map("user_id")
+  body      String
+  status    CommentStatus  @default(PENDING)
+  createdAt DateTime       @default(now()) @map("created_at")
+  title     Title          @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Session {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  expiresAt DateTime  @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  userAgent String?   @map("user_agent")
+  ip        String?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
